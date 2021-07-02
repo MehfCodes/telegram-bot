@@ -1,26 +1,37 @@
 import http from 'http';
 import https from 'https';
+import env from 'dotenv';
+import axios from 'axios';
+env.config({ path: './config.env' });
 
 const server = http.createServer((request, response) => {
-  if (request.method === 'GET' && request.url === '/getMe') {
-    https.get(
-      'https://api.telegram.org/bot1753419991:AAEASVg3clpZqrnAuyRKKTncy5Nbpu3NfW4/getMe',
-      (res) => {
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-        res.on('end', () => {
-          if (res.statusCode === 200) {
-            response
-              .writeHead(200, { 'Content-Type': 'application/json' })
-              .write(data);
+  let data = '';
+  request
+    .on('data', (chunk) => {
+      data += chunk;
+    })
+    .on('end', () => {
+      let body = JSON.parse(data);
+      const chatId = body.message.chat.id;
+      const sentMessage = body.message.text;
+
+      if (sentMessage === 'hi') {
+        axios
+          .post(`${process.env.telegram_url}/sendMessage`, {
+            chat_id: chatId,
+            text: 'hello back 👋',
+          })
+          .then((tlgRes) => {
+            response.write(tlgRes.data.result.text);
             response.end();
-          }
-        });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
-    );
-  }
+    });
 });
 
-server.listen(10000, () => console.log('server started...'));
+server.listen(80, () => {
+  console.log('server started...');
+});
