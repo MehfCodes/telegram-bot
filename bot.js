@@ -22,7 +22,7 @@ export async function startBot(req, res) {
         sentMessage = sentMessage.substring(0, sentMessage.lastIndexOf('?'));
       }
       const audio =
-        'https://host2.rj-mw1.com/media/mp3/mp3-256/' +
+        process.env.host_url +
         sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
         '.mp3';
       await sendReply(
