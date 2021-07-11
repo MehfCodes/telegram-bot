@@ -1,22 +1,27 @@
 import axios from 'axios';
 import EventEmitter from 'events';
-const Emitter = new EventEmitter();
 
-class Bot extends Emitter {
-  async startBot(req, res) {
+class Bot {
+  constructor(req, res) {
+    this.req = req;
+    this.res = res;
+    this.startBot();
+  }
+
+  async startBot() {
     try {
       const defaultReply =
         'i can send radiojavan mp3 file to you ,so give me a link!';
 
-      let { chatId, sentMessage } = await parsReqToJson(req);
+      let { chatId, sentMessage } = await this.parsReqToJson();
       if (sentMessage === '/start') {
-        await sendReply({
+        await this.sendReply({
           chat_id: chatId,
           text: defaultReply,
         });
       } else if (sentMessage === 'hi') {
         const reply = 'hi darling👋🥰';
-        await sendReply({
+        await this.sendReply({
           chat_id: chatId,
           text: reply,
         });
@@ -28,7 +33,7 @@ class Bot extends Emitter {
           process.env.host_url +
           sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
           '.mp3';
-        await sendReply(
+        await this.sendReply(
           {
             chat_id: chatId,
             audio,
@@ -36,18 +41,18 @@ class Bot extends Emitter {
           'sendAudio'
         );
       }
-      res.end();
+      this.res.end();
     } catch (error) {
       console.log(error.message);
-      res.end();
+      this.res.end();
     }
   }
 
-  parsReqToJson(req) {
+  parsReqToJson() {
     return new Promise((resolve, reject) => {
       let data = '';
       let obj = {};
-      req
+      this.req
         .on('data', (chunk) => {
           data += chunk;
         })
