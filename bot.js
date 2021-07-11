@@ -2,7 +2,7 @@ import axios from 'axios';
 import EventEmitter from 'events';
 const Emitter = new EventEmitter();
 
-class Bot extends Emitter() {
+class Bot extends Emitter {
   async startBot(req, res) {
     try {
       const defaultReply =
@@ -78,3 +78,5 @@ class Bot extends Emitter() {
     }
   }
 }
+
+export default Bot;
