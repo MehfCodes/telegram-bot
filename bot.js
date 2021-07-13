@@ -2,7 +2,6 @@ import axios from 'axios';
 
 class Bot {
   constructor(req, res) {
-    super();
     this.req = req;
     this.res = res;
     this.eventNames = ['/start', 'hi', 'radiojavan'];
