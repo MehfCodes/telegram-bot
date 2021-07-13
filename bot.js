@@ -1,51 +1,52 @@
 import axios from 'axios';
-import EventEmitter from 'events';
 
 class Bot {
   constructor(req, res) {
+    super();
     this.req = req;
     this.res = res;
-    this.startBot();
+    this.eventNames = ['/start', 'hi', 'radiojavan'];
   }
 
-  async startBot() {
-    try {
-      const defaultReply =
-        'i can send radiojavan mp3 file to you ,so give me a link!';
-
-      let { chatId, sentMessage } = await this.parsReqToJson();
-      if (sentMessage === '/start') {
-        await this.sendReply({
-          chat_id: chatId,
-          text: defaultReply,
-        });
-      } else if (sentMessage === 'hi') {
-        const reply = 'hi darling👋🥰';
-        await this.sendReply({
-          chat_id: chatId,
-          text: reply,
-        });
-      } else if (sentMessage.includes('radiojavan')) {
-        if (sentMessage.includes('?')) {
-          sentMessage = sentMessage.substring(0, sentMessage.lastIndexOf('?'));
-        }
-        const audio =
-          process.env.host_url +
-          sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
-          '.mp3';
-        await this.sendReply(
-          {
-            chat_id: chatId,
-            audio,
-          },
-          'sendAudio'
-        );
-      }
-      this.res.end();
-    } catch (error) {
-      console.log(error.message);
-      this.res.end();
+  async onText(ev, reply) {
+    let { chatId, sentMessage } = await this.parsReqToJson();
+    if (sentMessage === ev) {
+      await this.sendReply({
+        chat_id: chatId,
+        text: reply,
+      });
+    } else if (
+      ev == '*' &&
+      !this.eventNames.includes(sentMessage) &&
+      !sentMessage.includes('radiojavan')
+    ) {
+      await this.sendReply({
+        chat_id: chatId,
+        text: 'damn man, give me a fucking rj link😡',
+      });
     }
+    this.res.end();
+  }
+
+  async onAudio(msg) {
+    let { chatId, sentMessage } = await this.parsReqToJson();
+    if (sentMessage.includes(msg)) {
+      if (sentMessage.includes('?')) {
+        sentMessage = sentMessage.substring(0, sentMessage.lastIndexOf('?'));
+      }
+      const audio =
+        process.env.host_url +
+        sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
+        '.mp3';
+      await this.sendReply(
+        {
+          chat_id: chatId,
+          audio,
+        },
+        'sendAudio'
+      );
+    }
+    this.res.end();
   }
 
   parsReqToJson() {
@@ -57,15 +58,20 @@ class Bot {
           data += chunk;
         })
         .on('end', () => {
-          const body = JSON.parse(data);
-          try {
-            if (body) {
-              obj.chatId = body.message.chat.id;
-              obj.sentMessage = body.message.text;
-              resolve(obj);
+          // console.log(data);
+          if (data != '') {
+            const body = JSON.parse(data);
+            try {
+              if (body) {
+                if (body.message) {
+                  obj.chatId = body.message.chat.id;
+                  obj.sentMessage = body.message.text;
+                  resolve(obj);
+                }
+              }
+            } catch (error) {
+              reject(error);
             }
-          } catch (error) {
-            reject(error);
           }
         });
     });
