@@ -1,5 +1,6 @@
 import axios from 'axios';
-
+import https from 'https';
+import { promisify } from 'util';
 class Bot {
   constructor(req, res) {
     this.req = req;
@@ -17,7 +18,8 @@ class Bot {
     } else if (
       ev == '*' &&
       !this.eventNames.includes(sentMessage) &&
-      !sentMessage.includes('radiojavan')
+      !sentMessage.includes('radiojavan') &&
+      !sentMessage.includes('rj.app')
     ) {
       await this.sendReply({
         chat_id: chatId,
@@ -30,26 +32,40 @@ class Bot {
   async onAudio(msg) {
     let { chatId, sentMessage } = await this.parsReqToJson();
     if (sentMessage.includes(msg)) {
-      if (sentMessage.includes('?')) {
-        sentMessage = sentMessage.substring(0, sentMessage.lastIndexOf('?'));
-      }
       if (sentMessage.includes('rj.app/m/')) {
-        const rjRes = await axios.get(sentMessage);
-        sentMessage = rjRes.headers.location;
+        https.get(sentMessage, async (res) => {
+          sentMessage = res.headers.location;
+          const audio =
+            process.env.host_url +
+            sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
+            '.mp3';
+          await this.sendReply(
+            {
+              chat_id: chatId,
+              audio,
+            },
+            'sendAudio'
+          );
+          this.res.end();
+        });
+      } else {
+        if (sentMessage.includes('?')) {
+          sentMessage = sentMessage.substring(0, sentMessage.lastIndexOf('?'));
+        }
+        const audio =
+          process.env.host_url +
+          sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
+          '.mp3';
+        await this.sendReply(
+          {
+            chat_id: chatId,
+            audio,
+          },
+          'sendAudio'
+        );
       }
-      const audio =
-        process.env.host_url +
-        sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
-        '.mp3';
-      await this.sendReply(
-        {
-          chat_id: chatId,
-          audio,
-        },
-        'sendAudio'
-      );
+      this.res.end();
     }
-    this.res.end();
   }
 
   parsReqToJson() {
