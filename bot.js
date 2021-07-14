@@ -50,29 +50,33 @@ class Bot {
 
   parsReqToJson() {
     return new Promise((resolve, reject) => {
-      let data = '';
-      let obj = {};
-      this.req
-        .on('data', (chunk) => {
-          data += chunk;
-        })
-        .on('end', () => {
-          // console.log(data);
-          if (data != '') {
-            const body = JSON.parse(data);
-            try {
-              if (body) {
-                if (body.message) {
-                  obj.chatId = body.message.chat.id;
-                  obj.sentMessage = body.message.text;
-                  resolve(obj);
+      if (this.req.method === 'POST' && this.req.url === '/') {
+        let data = '';
+        let obj = {};
+        this.req
+          .on('data', (chunk) => {
+            data += chunk;
+          })
+          .on('end', () => {
+            // console.log(data);
+            if (data != '') {
+              const body = JSON.parse(data);
+              try {
+                if (body) {
+                  if (body.message) {
+                    obj.chatId = body.message.chat.id;
+                    obj.sentMessage = body.message.text;
+                    resolve(obj);
+                  }
                 }
+              } catch (error) {
+                reject(error);
               }
-            } catch (error) {
-              reject(error);
             }
-          }
-        });
+          });
+      } else {
+        this.res.end();
+      }
     });
   }
 
