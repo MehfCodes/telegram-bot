@@ -11,6 +11,7 @@ const server = http.createServer(async (request, response) => {
   );
   bot.onText('hi', 'hi darling👋🥰');
   bot.onAudio('radiojavan');
+  bot.onAudio('rj.app');
   bot.onText('*');
 });
 

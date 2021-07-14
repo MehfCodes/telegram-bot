@@ -33,6 +33,10 @@ class Bot {
       if (sentMessage.includes('?')) {
         sentMessage = sentMessage.substring(0, sentMessage.lastIndexOf('?'));
       }
+      if (sentMessage.includes('rj.app/m/')) {
+        const rjRes = await axios.get(sentMessage);
+        sentMessage = rjRes.headers.location;
+      }
       const audio =
         process.env.host_url +
         sentMessage.substring(sentMessage.lastIndexOf('/') + 1) +
