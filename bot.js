@@ -33,7 +33,10 @@ class Bot {
   async onAudio(msg) {
     let { chatId, sentMessage } = await this.parsReqToJson();
     if (sentMessage.includes(msg)) {
-      if (sentMessage.includes('rj.app/m/')) {
+      if (
+        sentMessage.includes('rj.app/m/') ||
+        sentMessage.includes('rjapp.app/m/')
+      ) {
         https.get(sentMessage, async (res) => {
           sentMessage = res.headers.location;
           const audio =
