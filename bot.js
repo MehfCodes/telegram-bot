@@ -19,7 +19,8 @@ class Bot {
       ev == '*' &&
       !this.eventNames.includes(sentMessage) &&
       !sentMessage.includes('radiojavan') &&
-      !sentMessage.includes('rj.app')
+      !sentMessage.includes('rj.app') &&
+      !sentMessage.includes('rjapp.app')
     ) {
       await this.sendReply({
         chat_id: chatId,
